@@ -2,6 +2,54 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 import csv
+import datetime
+import subprocess
+try:
+    from moviepy.editor import VideoFileClip, AudioFileClip, CompositeAudioClip
+except ImportError:
+    print("MoviePy not available, audio will not be added to video")
+    VideoFileClip = None
+
+# Sound paths
+lock_sound_path = '/System/Library/Sounds/Ping.aiff'
+overtake_sound_path = '/System/Library/Sounds/Glass.aiff'
+progress_sound_path = '/System/Library/Sounds/Pop.aiff'  # For progress milestones
+car_detect_sound_path = '/System/Library/Sounds/Basso.aiff'  # For car detection
+bus_detect_sound_path = '/System/Library/Sounds/Funk.aiff'  # For bus detection
+
+# Preload audio clips
+try:
+    lock_clip = AudioFileClip(lock_sound_path)
+    overtake_clip = AudioFileClip(overtake_sound_path)
+    progress_clip = AudioFileClip(progress_sound_path)
+    car_detect_clip = AudioFileClip(car_detect_sound_path)
+    bus_detect_clip = AudioFileClip(bus_detect_sound_path)
+    audio_clips_preloaded = True
+except Exception as e:
+    print(f"Error preloading audio clips: {e}")
+    audio_clips_preloaded = False
+
+# List to collect audio clips
+audio_clips = []
+
+# Track progress milestones played
+progress_milestones = {25, 50, 75, 100}
+played_milestones = set()
+
+# Track if bus passed sound played
+bus_passed_sound_played = False
+
+# Preload audio clips
+try:
+    lock_clip = AudioFileClip(lock_sound_path)
+    overtake_clip = AudioFileClip(overtake_sound_path)
+    progress_clip = AudioFileClip(progress_sound_path)
+    car_detect_clip = AudioFileClip(car_detect_sound_path)
+    bus_detect_clip = AudioFileClip(bus_detect_sound_path)
+    audio_clips_preloaded = True
+except Exception as e:
+    print(f"Error preloading audio clips: {e}")
+    audio_clips_preloaded = False
 
 # Load YOLO model
 model = YOLO("yolov8n.pt")
@@ -9,11 +57,17 @@ model = YOLO("yolov8n.pt")
 video_path = "/Users/connorv-e/car_videos/video/videoplayback (1).mp4"
 output_path = "/Users/connorv-e/car_videos/video/annotated_video.mp4"
 data_log_path = "/Users/connorv-e/car_videos/overtake_data.csv"
+overtake_log_path = "/Users/connorv-e/car_videos/overtake_events.csv"
 
 # Setup CSV logging
 csv_file = open(data_log_path, 'w', newline='')
 csv_writer = csv.writer(csv_file)
-csv_writer.writerow(['Frame', 'Time_Sec', 'Car_ID', 'Vertical_Dist', 'Horizontal_Dist', 'Distance_to_Bus', 'Line_Angle_Deg'])
+csv_writer.writerow(['Timestamp', 'Frame', 'Time_Sec', 'Car_ID', 'Vertical_Dist', 'Horizontal_Dist', 'Distance_to_Bus', 'Line_Angle_Deg'])
+
+# Setup overtake events CSV
+overtake_csv_file = open(overtake_log_path, 'w', newline='')
+overtake_csv_writer = csv.writer(overtake_csv_file)
+overtake_csv_writer.writerow(['Timestamp', 'Frame', 'Time_Sec', 'Car_ID', 'Horizontal_Shift', 'Angle', 'Distance_Change'])
 
 cap = cv2.VideoCapture(video_path)
 
@@ -66,6 +120,9 @@ while cap.isOpened():
                 cv2.rectangle(frame,(x1,y1),(x2,y2),(0,255,0),2)
                 cv2.putText(frame,"Bus",(x1,y1-10),
                             cv2.FONT_HERSHEY_SIMPLEX,0.9,(0,255,0),2)
+                # Record bus detection sound
+                if audio_clips_preloaded:
+                    audio_clips.append(bus_detect_clip.set_start(frame_count / fps))
 
             # Car
             if cls == 2:
@@ -75,6 +132,9 @@ while cap.isOpened():
                 cv2.rectangle(frame,(x1,y1),(x2,y2),(255,0,0),2)
                 cv2.putText(frame,f"Car {int(track_id)}",(x1,y1-10),
                             cv2.FONT_HERSHEY_SIMPLEX,0.9,(255,0,0),2)
+                # Record car detection sound
+                if audio_clips_preloaded:
+                    audio_clips.append(car_detect_clip.set_start(frame_count / fps))
 
     # ----- OVERTAKE ANALYSIS -----
 
@@ -101,6 +161,9 @@ while cap.isOpened():
                 target_car_id = closest_car[0]
 
                 print(f"Locking onto Car ID {target_car_id}")
+                # Record lock sound event
+                if audio_clips_preloaded:
+                    audio_clips.append(lock_clip.set_start(frame_count / fps))
 
         # -------- FIND LOCKED CAR --------
 
@@ -143,6 +206,7 @@ while cap.isOpened():
         
         # Log line data to CSV
         csv_writer.writerow([
+            datetime.datetime.now().isoformat(),
             frame_count,
             frame_count / fps,
             int(track_id),
@@ -174,6 +238,13 @@ while cap.isOpened():
         max_horiz = 150
         progress = min(max(dx / max_horiz, 0), 1)
         percent = int(progress * 100)
+
+        # Check for progress milestones
+        for milestone in progress_milestones:
+            if percent >= milestone and milestone not in played_milestones:
+                if audio_clips_preloaded:
+                    audio_clips.append(progress_clip.set_start(frame_count / fps))
+                played_milestones.add(milestone)
 
         cv2.putText(frame,
                     f"Lateral Progress: {percent}%",
@@ -236,6 +307,17 @@ while cap.isOpened():
                 overtaken = True
                 time_sec = frame_count / fps
                 
+                # Log overtake event
+                overtake_csv_writer.writerow([
+                    datetime.datetime.now().isoformat(),
+                    frame_count,
+                    time_sec,
+                    int(track_id),
+                    dx_change,
+                    current_angle,
+                    current['dist'] - history_start['dist']
+                ])
+                
                 print(
                     f"✓ OVERTAKE DETECTED by car {int(track_id)} "
                     f"at frame {frame_count} ({time_sec:.2f}s)"
@@ -245,8 +327,16 @@ while cap.isOpened():
                     f"Angle: {current_angle:.1f}° | "
                     f"Distance: {history_start['dist']:.1f}→{current['dist']:.1f}px"
                 )
+                # Record overtake sound event
+                if audio_clips_preloaded:
+                    audio_clips.append(overtake_clip.set_start(time_sec))
 
         # ----- DISPLAY ALERT -----
+
+        if overtaken and not bus_passed_sound_played:
+            if audio_clips_preloaded:
+                audio_clips.append(overtake_clip.set_start(frame_count / fps))  # Reuse overtake sound for bus passed
+            bus_passed_sound_played = True
 
         if overtaken:
 
@@ -263,9 +353,25 @@ while cap.isOpened():
 cap.release()
 out.release()
 csv_file.close()
+overtake_csv_file.close()
 
-print("Annotated video saved to:", output_path)
+# Add audio to the video
+if VideoFileClip is not None:
+    print("Adding audio to video...")
+    video = VideoFileClip(output_path)
+    if audio_clips:
+        composite_audio = CompositeAudioClip(audio_clips)
+        video = video.set_audio(composite_audio)
+
+    output_with_audio = output_path.replace('.mp4', '_with_audio.mp4')
+    video.write_videofile(output_with_audio, codec='libx264', audio_codec='aac')
+
+    print("Annotated video with audio saved to:", output_with_audio)
+else:
+    print("Annotated video saved to:", output_path)
+
 print(f"Line data logged to: {data_log_path}")
+print(f"Overtake events logged to: {overtake_log_path}")
 
 if not overtaken:
     print("No overtaking detected")
