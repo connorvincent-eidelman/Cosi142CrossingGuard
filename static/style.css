@@ -32,6 +32,34 @@ header h1 {
     font-size: 28px;
 }
 
+.tab-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    color: #667eea;
+}
+
+.tab-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
 .status {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -54,6 +82,149 @@ main {
     background: white;
     padding: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.traffic-analysis {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.traffic-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.summary-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.summary-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.summary-card .highlight {
+    font-size: 32px;
+    font-weight: bold;
+    margin: 5px 0;
+    color: #fff;
+}
+
+.summary-card .value {
+    font-size: 12px;
+    opacity: 0.8;
+    margin: 0;
+}
+
+.chart-wrapper {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.chart-wrapper h2 {
+    margin-top: 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.traffic-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    height: 200px;
+    padding: 10px 0;
+}
+
+.traffic-bar {
+    flex: 1;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    min-width: 30px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.traffic-bar:hover {
+    opacity: 0.8;
+}
+
+.traffic-bar-label {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: #666;
+    white-space: nowrap;
+    width: 80px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.traffic-table-wrapper {
+    margin-top: 20px;
+}
+
+.traffic-table-wrapper h2 {
+    color: #333;
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.traffic-table-wrapper table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.traffic-table-wrapper thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.traffic-table-wrapper th {
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.traffic-table-wrapper tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.traffic-table-wrapper tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.traffic-table-wrapper td {
+    padding: 12px;
+    color: #333;
+}
+
+.traffic-table-wrapper .density-bar {
+    background: #667eea;
+    height: 20px;
+    border-radius: 3px;
+    display: inline-block;
 }
 
 .table-wrapper {
@@ -130,6 +301,15 @@ footer {
         font-size: 22px;
     }
 
+    .tab-buttons {
+        gap: 5px;
+    }
+
+    .tab-btn {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+
     .status {
         grid-template-columns: 1fr;
     }
@@ -145,5 +325,26 @@ footer {
     thead th,
     tbody td {
         padding: 10px;
+    }
+
+    .traffic-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-card .highlight {
+        font-size: 24px;
+    }
+
+    .traffic-chart {
+        height: 150px;
+    }
+
+    .traffic-table-wrapper table {
+        font-size: 12px;
+    }
+
+    .traffic-table-wrapper th,
+    .traffic-table-wrapper td {
+        padding: 8px;
     }
 }

@@ -4,33 +4,11 @@ from ultralytics import YOLO
 import csv
 import datetime
 import subprocess
-try:
-    from moviepy.editor import VideoFileClip, AudioFileClip, CompositeAudioClip
-except ImportError:
-    print("MoviePy not available, audio will not be added to video")
-    VideoFileClip = None
 
-# Sound paths
-lock_sound_path = '/System/Library/Sounds/Ping.aiff'
-overtake_sound_path = '/System/Library/Sounds/Glass.aiff'
-progress_sound_path = '/System/Library/Sounds/Pop.aiff'  # For progress milestones
-car_detect_sound_path = '/System/Library/Sounds/Basso.aiff'  # For car detection
-bus_detect_sound_path = '/System/Library/Sounds/Funk.aiff'  # For bus detection
-
-# Preload audio clips
-try:
-    lock_clip = AudioFileClip(lock_sound_path)
-    overtake_clip = AudioFileClip(overtake_sound_path)
-    progress_clip = AudioFileClip(progress_sound_path)
-    car_detect_clip = AudioFileClip(car_detect_sound_path)
-    bus_detect_clip = AudioFileClip(bus_detect_sound_path)
-    audio_clips_preloaded = True
-except Exception as e:
-    print(f"Error preloading audio clips: {e}")
-    audio_clips_preloaded = False
-
-# List to collect audio clips
+# Audio disabled for performance - can be re-enabled if needed
+audio_clips_preloaded = False
 audio_clips = []
+VideoFileClip = None
 
 # Track progress milestones played
 progress_milestones = {25, 50, 75, 100}
@@ -39,24 +17,9 @@ played_milestones = set()
 # Track if bus passed sound played
 bus_passed_sound_played = False
 
-# Cooldown for detection sounds (seconds)
-sound_cooldown = 0.1
-last_car_sound = 0
-last_bus_sound = 0
 # Track which cars and buses have had their detection sound played
 played_car_sounds = set()
 bus_sound_played = False
-# Preload audio clips
-try:
-    lock_clip = AudioFileClip(lock_sound_path)
-    overtake_clip = AudioFileClip(overtake_sound_path)
-    progress_clip = AudioFileClip(progress_sound_path)
-    car_detect_clip = AudioFileClip(car_detect_sound_path)
-    bus_detect_clip = AudioFileClip(bus_detect_sound_path)
-    audio_clips_preloaded = True
-except Exception as e:
-    print(f"Error preloading audio clips: {e}")
-    audio_clips_preloaded = False
 
 # Load YOLO model
 model = YOLO("yolov8n.pt")
@@ -364,20 +327,8 @@ out.release()
 csv_file.close()
 overtake_csv_file.close()
 
-# Add audio to the video
-if VideoFileClip is not None:
-    print("Adding audio to video...")
-    video = VideoFileClip(output_path)
-    if audio_clips:
-        composite_audio = CompositeAudioClip(audio_clips)
-        video = video.set_audio(composite_audio)
-
-    output_with_audio = output_path.replace('.mp4', '_with_audio.mp4')
-    video.write_videofile(output_with_audio, codec='libx264', audio_codec='aac')
-
-    print("Annotated video with audio saved to:", output_with_audio)
-else:
-    print("Annotated video saved to:", output_path)
+# Audio processing disabled for performance
+print("Annotated video saved to:", output_path)
 
 print(f"Line data logged to: {data_log_path}")
 print(f"Overtake events logged to: {overtake_log_path}")
