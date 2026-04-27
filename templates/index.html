@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overtake Events Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Overtake Events Dashboard</h1>
+        <div class="status">
+          <p>Last Updated: <span id="timestamp">--:--:--</span></p>
+          <p>Total Events: <span id="row-count">0</span></p>
+          <p>Auto-refresh: Every 30 seconds</p>
+        </div>
+      </header>
+
+      <main>
+        <div class="table-wrapper">
+          <table id="data-table">
+            <thead>
+              <tr id="header-row">
+                <!-- Headers will be populated dynamically -->
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <tr>
+                <td colspan="100%" class="loading">Loading data...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+
+      <footer>
+        <p>Car Detection System - Real-time Overtake Events Monitoring</p>
+      </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>
