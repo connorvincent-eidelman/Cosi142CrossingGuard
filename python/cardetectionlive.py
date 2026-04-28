@@ -4,11 +4,23 @@ from ultralytics import YOLO
 import csv
 import datetime
 import subprocess
+import requests
 try:
     from moviepy.editor import VideoFileClip, AudioFileClip, CompositeAudioClip
 except ImportError:
     print("MoviePy not available, audio will not be added to video")
     VideoFileClip = None
+
+# Raspberry Pi notification
+PI_IP = "172.20.10.10"  # Your Pi IP
+
+def notify_pi_bus_passed():
+    """Send HTTP signal to Pi when bus is passed"""
+    try:
+        requests.get(f"http://{PI_IP}:8000/bus_passed", timeout=0.5)
+        print("Sent BUS PASSED signal to Pi")
+    except Exception as e:
+        print("Failed to notify Pi:", e)
 
 # Sound paths
 lock_sound_path = '/System/Library/Sounds/Ping.aiff'
@@ -357,6 +369,7 @@ while cap.isOpened():
         if overtaken and not bus_passed_sound_played:
             if audio_clips_preloaded:
                 audio_clips.append(overtake_clip.set_start(frame_count / fps))  # Reuse overtake sound for bus passed
+            notify_pi_bus_passed()  # ⭐ Send signal to Pi
             bus_passed_sound_played = True
 
         if overtaken:
