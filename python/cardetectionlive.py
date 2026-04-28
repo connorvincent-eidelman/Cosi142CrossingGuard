@@ -65,7 +65,7 @@ model = YOLO("yolov8n.pt")
 # Example formats:
 # - MJPEG stream: http://192.168.1.100:8080/?action=stream
 # - RTSP stream:  rtsp://192.168.1.100:8554/stream
-stream_url = "http://172.20.10.4:8888/?action=stream"
+stream_url = "http://172.20.10.10:8888/?action=stream"
 output_path = "/Users/connorv-e/car_videos/video/annotated_video.mp4"
 data_log_path = "/Users/connorv-e/car_videos/overtake_data.csv"
 overtake_log_path = "/Users/connorv-e/car_videos/overtake_events.csv"
