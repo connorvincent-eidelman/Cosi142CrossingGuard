@@ -24,7 +24,7 @@ bus_sound_played = False
 # Load YOLO model
 model = YOLO("yolov8n.pt")
 
-video_path = "/Users/connorv-e/car_videos/video/videoplayback (1).mp4"
+video_path = "/Users/connorv-e/car_videos/video/videoplayback (10).mp4"
 output_path = "/Users/connorv-e/car_videos/video/annotated_video.mp4"
 data_log_path = "/Users/connorv-e/car_videos/overtake_data.csv"
 overtake_log_path = "/Users/connorv-e/car_videos/overtake_events.csv"

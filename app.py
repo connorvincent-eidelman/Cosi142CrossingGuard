@@ -69,11 +69,22 @@ def analyze_traffic():
     peak_time = max(traffic_timeline, key=lambda x: x['detections']) if traffic_timeline else None
     average_detections = sum(x['detections'] for x in traffic_timeline) / len(traffic_timeline) if traffic_timeline else 0
     
+    # Count unique cars
+    unique_cars = set()
+    try:
+        with open(DATA_CSV_FILE, 'r') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if 'Car_ID' in row:
+                    unique_cars.add(row['Car_ID'])
+    except Exception:
+        pass
+    
     return {
         'timeline': traffic_timeline,
         'peak_time': peak_time,
         'average_detections': average_detections,
-        'total_unique_cars': len(set(row['Car_ID'] for row in csv.DictReader(open(DATA_CSV_FILE, 'r')) if 'Car_ID' in row))
+        'total_unique_cars': len(unique_cars)
     }
 
 @app.route('/')

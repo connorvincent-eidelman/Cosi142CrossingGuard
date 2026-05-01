@@ -82,7 +82,13 @@ output_path = "/Users/connorv-e/car_videos/video/annotated_video.mp4"
 data_log_path = "/Users/connorv-e/car_videos/overtake_data.csv"
 overtake_log_path = "/Users/connorv-e/car_videos/overtake_events.csv"
 
-# Setup CSV logging
+cap = cv2.VideoCapture(stream_url)
+
+if not cap.isOpened():
+    print(f"Error: Cannot open stream at {stream_url}")
+    exit(1)
+
+# Setup CSV logging (AFTER stream is connected, to preserve existing data if connection fails)
 csv_file = open(data_log_path, 'w', newline='')
 csv_writer = csv.writer(csv_file)
 csv_writer.writerow(['Timestamp', 'Frame', 'Time_Sec', 'Car_ID', 'Vertical_Dist', 'Horizontal_Dist', 'Distance_to_Bus', 'Line_Angle_Deg'])
@@ -91,12 +97,6 @@ csv_writer.writerow(['Timestamp', 'Frame', 'Time_Sec', 'Car_ID', 'Vertical_Dist'
 overtake_csv_file = open(overtake_log_path, 'w', newline='')
 overtake_csv_writer = csv.writer(overtake_csv_file)
 overtake_csv_writer.writerow(['Timestamp', 'Frame', 'Time_Sec', 'Car_ID', 'Horizontal_Shift', 'Angle', 'Distance_Change'])
-
-cap = cv2.VideoCapture(stream_url)
-
-if not cap.isOpened():
-    print(f"Error: Cannot open stream at {stream_url}")
-    exit(1)
 
 fps = cap.get(cv2.CAP_PROP_FPS)
 if fps <= 0:
